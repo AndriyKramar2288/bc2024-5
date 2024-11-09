@@ -32,63 +32,61 @@ const options = preparing();
 const host = options.host;
 const port = options.port;
 const cashe = options.cashe;
-const fullDataFileName = path.join(cashe, "info.json");
-let dataJson = [];
-const saveDataJson = () => {
+const fullDataFileName = path.join(cashe, "info.json"); // повний шлях до файлу з нотатками
+let dataJson = []; // список об'єктів, що репрезентуватимуть нотатки
+const saveDataJson = () => { // функція, щоб зберегти у файл поточний вміст dataJson
 	fsp.writeFile(fullDataFileName, JSON.stringify(dataJson));
 }
 
 app.get("/notes/:note", (req, res) => {
 	const note_name = req.params.note;
-	const note = dataJson.find((nt) => nt.name == note_name);
+	const note = dataJson.find((nt) => nt.name == note_name); // знайти нотатку в списку
 	if (note) {
-		res.send(note.text);
+		res.send(note.text); // як знайде нотатку, відсилає її текст
 	}
 	else {
-		res.sendStatus(404);
+		res.sendStatus(404); // як не знайде, 404
 	}
 });
 
-app.use(express.text());
+app.use(express.text()); // мідлвар для обробки сирого тексту
 app.put("/notes/:note", (req, res) => {
-	const note_name = req.params.note;
-	let success = false;
+	const note_name = req.params.note; 
+	let success = false; // маркер, чи знайшло необхідну нотатку в списку
 
 	dataJson.forEach((element) => {
 		if (element.name == note_name) {
 			element.text = req.body;
-			saveDataJson();
+			saveDataJson(); // сейв списку нотаток у файл
 			res.end();
 			success = true;
 		}
 	});
-	if (!success)
+	if (!success) // якщо текст жодної нотатки не змінило, 404
 		res.sendStatus(404);
 });
 
 app.delete("/notes/:note", (req, res) => {
 	const note_name = req.params.note;
-	const filtered = dataJson.filter((element) => element.name != note_name);
-	console.log(JSON.stringify(dataJson));
-	console.log(JSON.stringify(filtered));
-	if (JSON.stringify(dataJson) == JSON.stringify(filtered))
+	const filtered = dataJson.filter((element) => element.name != note_name); //фільтрує список від всіх нотаток, чиє ім'я note_name
+	if (JSON.stringify(dataJson) == JSON.stringify(filtered)) // якщо відфільтрований список такий ж, як і попередній (ніц не видалило)
 		res.sendStatus(404)
 	else {
-		dataJson = filtered;
-		saveDataJson();
+		dataJson = filtered; // якщо щось там-таки видалило, встановлює відфільтрований за основний
+		saveDataJson(); // сейв списку нотаток у файл
 	}
 	res.end();
 });
 
 app.get("/notes", (req, res) => {
 	res.type("application/json");
-	res.end(JSON.stringify(dataJson));
+	res.end(JSON.stringify(dataJson));	
 });
 
 
-app.use(multer().none());
+app.use(multer().none()); // мідлвар для роботи з multipart/form-data, метод none() то значить файли відсутні, працюємо тільки з текстом
 app.post("/write", (req, res) => {
-	if (dataJson.find(element => req.body.note_name == element.name)) 
+	if (dataJson.find(element => req.body.note_name == element.name)) // якщо в списку вже є така нотатка
 		res.sendStatus(400)
 	else {
 		dataJson.push({
@@ -101,7 +99,7 @@ app.post("/write", (req, res) => {
 	res.end();
 });
 
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname))); // вбудований мідлвар, що дозволяє напряму звертатись до файлів в поточній теці
 
 function main() {
 	dataText = fsp.readFile(fullDataFileName)
