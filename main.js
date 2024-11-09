@@ -79,6 +79,25 @@ app.delete("/notes/:note", (req, res) => {
 	res.end();
 });
 
+app.get("/notes", (req, res) => {
+	res.type("application/json");
+	res.end(JSON.stringify(dataJson));
+});
+
+app.use(multer().none());
+app.post("/write", (req, res) => {
+	if (dataJson.find(element => req.body.name == element.name)) 
+		res.sendStatus(400)
+	else {
+		dataJson.push({
+			"name": req.body.name,
+			"text": req.body.text,
+		});
+		saveDataJson();
+		res.sendStatus(201);
+	}
+});
+
 function main() {
 	dataText = fsp.readFile(fullDataFileName)
 	.then((result) => {
