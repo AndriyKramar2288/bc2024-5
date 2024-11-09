@@ -62,7 +62,6 @@ app.put("/notes/:note", (req, res) => {
 			success = true;
 		}
 	});
-
 	if (!success)
 		res.sendStatus(404);
 });
@@ -70,8 +69,10 @@ app.put("/notes/:note", (req, res) => {
 app.delete("/notes/:note", (req, res) => {
 	const note_name = req.params.note;
 	const filtered = dataJson.filter((element) => element.name != note_name);
+	console.log(JSON.stringify(dataJson));
+	console.log(JSON.stringify(filtered));
 	if (JSON.stringify(dataJson) == JSON.stringify(filtered))
-		res.sendStatus(404);
+		res.sendStatus(404)
 	else {
 		dataJson = filtered;
 		saveDataJson();
@@ -84,19 +85,23 @@ app.get("/notes", (req, res) => {
 	res.end(JSON.stringify(dataJson));
 });
 
+
 app.use(multer().none());
 app.post("/write", (req, res) => {
-	if (dataJson.find(element => req.body.name == element.name)) 
+	if (dataJson.find(element => req.body.note_name == element.name)) 
 		res.sendStatus(400)
 	else {
 		dataJson.push({
-			"name": req.body.name,
-			"text": req.body.text,
+			"name": req.body.note_name,
+			"text": req.body.note,
 		});
 		saveDataJson();
 		res.sendStatus(201);
 	}
+	res.end();
 });
+
+app.use(express.static(path.join(__dirname)));
 
 function main() {
 	dataText = fsp.readFile(fullDataFileName)
@@ -104,6 +109,7 @@ function main() {
 		dataJson = JSON.parse(result);
 	})
 	.catch((err) => {
+		// якщо файла з нотатками нема
 		saveDataJson();
 	})
 	.finally(() => {
