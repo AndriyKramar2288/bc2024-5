@@ -49,6 +49,36 @@ app.get("/notes/:note", (req, res) => {
 	}
 });
 
+app.use(express.text());
+app.put("/notes/:note", (req, res) => {
+	const note_name = req.params.note;
+	let success = false;
+
+	dataJson.forEach((element) => {
+		if (element.name == note_name) {
+			element.text = req.body;
+			saveDataJson();
+			res.end();
+			success = true;
+		}
+	});
+
+	if (!success)
+		res.sendStatus(404);
+});
+
+app.delete("/notes/:note", (req, res) => {
+	const note_name = req.params.note;
+	const filtered = dataJson.filter((element) => element.name != note_name);
+	if (JSON.stringify(dataJson) == JSON.stringify(filtered))
+		res.sendStatus(404);
+	else {
+		dataJson = filtered;
+		saveDataJson();
+	}
+	res.end();
+});
+
 function main() {
 	dataText = fsp.readFile(fullDataFileName)
 	.then((result) => {
