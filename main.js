@@ -99,7 +99,17 @@ app.post("/write", (req, res) => {
 	res.end();
 });
 
-app.use(express.static(path.join(__dirname))); // вбудований мідлвар, що дозволяє напряму звертатись до файлів в поточній теці
+app.get("/UploadForm.html", (req, res) => {
+	fsp.readFile("./UploadForm.html")
+		.then((result) => {
+			res.end(result);
+		})
+		.catch(() => {
+			res.sendStatus(500);
+			res.send("Наша форма вгубилася в часі й просторі.");
+		});
+});
+//app.use(express.static(path.join(__dirname))); // вбудований мідлвар, що дозволяє напряму звертатись до файлів в поточній теці
 
 function main() {
 	dataText = fsp.readFile(fullDataFileName)
